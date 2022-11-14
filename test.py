@@ -54,7 +54,6 @@ def implement_bb_strategy(data, lower_bb, upper_bb, open):
 
 buy_price, sell_price, bb_signal = implement_bb_strategy(data['Close'], data['Lower Band'], data['Upper Band'], data['Open'])
 tcdf = data[['Upper Band', 'Lower Band']]
-#data1 = yf.download(tickers='GOOG', period='1d', interval='1m')
 apd = [mpf.make_addplot(tcdf), mpf.make_addplot(buy_price, type = 'scatter',markersize=200,marker='^'), mpf.make_addplot(sell_price, type = 'scatter',markersize=200,marker='^'),
 mpf.make_addplot(data.Volume, type='bar', panel=1, ylabel='Volume', y_on_right=False)]
 
