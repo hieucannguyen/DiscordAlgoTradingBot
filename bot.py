@@ -65,4 +65,18 @@ async def create_chart(ctx):
     except:
         await ctx.send("Not a real stock.")
 
+@client.command(name="bollinger")
+async def bollinger_strategy(ctx):
+    await ctx.send('Enter a stock: ')
+
+    def check(msg):
+        return msg.author == ctx.author and msg.channel == ctx.channel
+    try:
+        msg = await client.wait_for("message", check=check, timeout=30)
+        stock = trade.trade()
+        stock.bollinger(f'{msg.content}')  # 30 seconds to reply
+        await ctx.channel.send(file=discord.File('chart.png'))
+    except:
+        await ctx.send("Not a real stock.")
+        
 client.run(TOKEN)
