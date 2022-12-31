@@ -59,24 +59,30 @@ async def create_chart(ctx):
         msg1 = await client.wait_for("message", check=check, timeout=30)
         await ctx.send('Enter another stock: ')
         msg2 = await client.wait_for("message", check=check, timeout=30)
-        stock = trade.trade()  # 30 seconds to reply
+        stock = trade.trade()
         stock.compare_stocks(f'{msg1.content}', f'{msg2.content}')
         await ctx.channel.send(file=discord.File('chart.png'))
     except:
-        await ctx.send("Not a real stock.")
+        await ctx.send("At least one of the stocks is not real")
+
 
 @client.command(name="bollinger")
 async def bollinger_strategy(ctx):
-    await ctx.send('Enter a stock: ')
+    stock = trade.trade()
 
     def check(msg):
         return msg.author == ctx.author and msg.channel == ctx.channel
+    await ctx.send('Enter a stock: ')
+    msg = await client.wait_for("message", check=check, timeout=30)
+    await ctx.send('Available intervals [1d, 1mo, 1y, 2y, max]\nEnter an interval: ')
+    interval = await client.wait_for("message", check=check, timeout=30)
+    bollinger = stock.bollinger(f'{msg.content}', f'{interval.content}')
     try:
-        msg = await client.wait_for("message", check=check, timeout=30)
-        stock = trade.trade()
-        stock.bollinger(f'{msg.content}')  # 30 seconds to reply
+        if (bollinger == 'Not a real stock' or bollinger == 'Interval unavailable'):
+            raise Exception
         await ctx.channel.send(file=discord.File('chart.png'))
+        await ctx.channel.send(bollinger)
     except:
-        await ctx.send("Not a real stock.")
-        
+        await ctx.channel.send(bollinger)
+
 client.run(TOKEN)
