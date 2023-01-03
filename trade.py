@@ -145,7 +145,6 @@ class trade:
                                          facecolor='w')
 
         trade.calcBollAndRsi(data)
-
         buyDate, sellDate, buyPrice, sellPrice, signal = trade.bollingerBandRsiStrategy(
             data)
 
