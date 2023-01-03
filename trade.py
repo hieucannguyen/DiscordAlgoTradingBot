@@ -19,7 +19,6 @@ class trade:
                  title=f'${stockName} price',
                  ylabel='Price ($USD)',
                  xlabel='Time',
-                 mav=(20),
                  addplot=mpf.make_addplot(
                      data.Volume, type='bar', panel=1, ylabel='Volume', y_on_right=False),
                  tight_layout=True,
@@ -34,7 +33,7 @@ class trade:
                                          facecolor='w')
         adds = [mpf.make_addplot(stock1.Volume, type='bar', panel=1, ylabel='Volume', y_on_right=False),
                 mpf.make_addplot(stock2, type='candle', panel=2,
-                                 ylabel=f'\${stockName2} (\$USD)', mav=(5)),
+                                 ylabel=f'\${stockName2} (\$USD)'),
                 mpf.make_addplot(stock2.Volume, type='bar', panel=3, ylabel='Volume', y_on_right=False)]
 
         mpf.plot(stock1,
@@ -42,7 +41,6 @@ class trade:
                  title=f'\${stockName1} vs \${stockName2}',
                  ylabel=f'\${stockName1} (\$USD)',
                  xlabel='Time',
-                 mav=(5),
                  addplot=adds,
                  tight_layout=True,
                  style=customstyle,
@@ -53,6 +51,63 @@ class trade:
         df = pd.DataFrame(data)
         adj = df['Adj Close'][0]
         return f'EOD update on ${stockName}\n-Date: {df.index[0].date()}\n-Open: {df.Open[0]}\n-High: {df.High[0]}\n-Low: {df.Low[0]}\n-Close: {df.Close[0]}\n-Adj Close: {adj}\n-Volume: {df.Volume[0]}'
+
+    def calcBollAndRsi(data):
+        data['Percent Change'] = data['Close'].pct_change()
+        data['Buy&Hold returns'] = (1+data['Percent Change']).cumprod()
+        data['Middle Band'] = data['Close'].rolling(window=21).mean()
+        data['Upper Band'] = data['Middle Band'] + \
+            2*data['Close'].rolling(window=21).std()
+        data['Lower Band'] = data['Middle Band'] - \
+            2*data['Close'].rolling(window=21).std()
+        data['Upmove'] = data['Percent Change'].apply(
+            lambda x: x if x > 0 else 0)
+        data['Downmove'] = data['Percent Change'].apply(
+            lambda x: abs(x) if x < 0 else 0)
+        data['Avg Up'] = data['Upmove'].ewm(span=19).mean()
+        data['Avg Down'] = data['Downmove'].ewm(span=19).mean()
+        data['RS'] = data['Avg Up']/data['Avg Down']
+        data['RSI'] = data['RS'].apply(lambda x: 100-(100/(x+1)))
+
+    def bollingerBandRsiStrategy(data):
+        conditions = [(data['Close'] < data['Lower Band']) & (data['RSI'] < 30),
+                      (data['Close'] > data['Upper Band']) & (data['RSI'] > 70)]
+        choices = ['Buy', 'Sell']
+        data['Signals'] = np.select(conditions, choices)
+        data['Signals'] = data['Signals'].shift(1)
+        data.dropna(inplace=True)
+        buyDate, sellDate = [], []
+        buyPrice, sellPrice = [], []
+        signal = []
+        position = False
+
+        for i in range(len(data)):
+            if not position and data['Signals'][i] == 'Buy':
+                buyDate.append(data.index[i])
+                buyPrice.append(data.Open[i])
+                sellPrice.append(np.nan)
+                position = True
+            elif position and data['Signals'][i] == 'Sell':
+                sellDate.append(data.index[i])
+                sellPrice.append(data.Open[i])
+                buyPrice.append(np.nan)
+                position = False
+            else:
+                buyPrice.append(np.nan)
+                sellPrice.append(np.nan)
+            if not position:
+                signal.append(0)
+            else:
+                signal.append(1)
+
+        return buyDate, sellDate, buyPrice, sellPrice, signal
+
+    def calcProfits(data, buyDate, sellDate):
+        buys = data.loc[buyDate].Open
+        sells = data.loc[sellDate].Open
+        profits = (pd.Series([(sell - buy) / buy for sell,
+                   buy in zip(sells, buys)])+1).prod()-1
+        return profits
 
     def bollinger(self, stockName, interval):
         try:
@@ -89,70 +144,30 @@ class trade:
                                          y_on_right=False,
                                          facecolor='w')
 
-        data['Percent Change'] = data['Close'].pct_change()
-        data['Middle Band'] = data['Close'].rolling(window=21).mean()
-        data['Upper Band'] = data['Middle Band'] + \
-            2*data['Close'].rolling(window=21).std()
-        data['Lower Band'] = data['Middle Band'] - \
-            2*data['Close'].rolling(window=21).std()
-        data['Percent Band'] = (
-            data['Close'] - data['Lower Band'])/(data['Upper Band'] - data['Lower Band'])
+        trade.calcBollAndRsi(data)
 
-        def bollingerBandStrategy(data, lower_bb, upper_bb, open):
-            buy_price = []
-            sell_price = []
-            bb_signal = []
-            signal = False
+        buyDate, sellDate, buyPrice, sellPrice, signal = trade.bollingerBandRsiStrategy(
+            data)
 
-            for i in range(len(data)):
-                if lower_bb[i] > ((data[i] + open[i])/2):
-                    if not signal:
-                        buy_price.append(data[i])
-                        sell_price.append(np.nan)
-                        signal = True
-                        bb_signal.append(1)
-                    else:
-                        buy_price.append(np.nan)
-                        sell_price.append(np.nan)
-                        bb_signal.append(1)
-                elif upper_bb[i] < ((data[i] + open[i])/2):
-                    if signal:
-                        buy_price.append(np.nan)
-                        sell_price.append(data[i])
-                        signal = False
-                        bb_signal.append(0)
-                    else:
-                        buy_price.append(np.nan)
-                        sell_price.append(np.nan)
-                        bb_signal.append(0)
-                else:
-                    buy_price.append(np.nan)
-                    sell_price.append(np.nan)
-                    if signal == 1:
-                        bb_signal.append(1)
-                    else:
-                        bb_signal.append(0)
-
-            return buy_price, sell_price, bb_signal
-
-        buy_price, sell_price, bb_signal = bollingerBandStrategy(
-            data['Close'], data['Lower Band'], data['Upper Band'], data['Open'])
-
-        data['Position'] = bb_signal
-        data['Position'] = data['Position'].shift(1)
-        data['Buy&Hold returns'] = (1+data['Percent Change']).cumprod()
-        data['Bollinger returns'] = (
+        data['Position'] = signal
+        data['Strategy returns'] = (
             1 + data['Position'] * data['Percent Change']).cumprod()
 
-        apd = [mpf.make_addplot(data['Upper Band'], color='blue'),
-               mpf.make_addplot(data['Lower Band'], color='blue'),
-               mpf.make_addplot(buy_price, type='scatter',
+        profits = trade.calcProfits(data, buyDate, sellDate) * 100
+
+        upper = np.asarray(data['Upper Band'])
+        lower = np.asarray(data['Lower Band'])
+        buyAndHold = np.asarray(data['Buy&Hold returns'])
+        stratReturns = np.asarray(data['Strategy returns'])
+        apd = [mpf.make_addplot(upper, color='blue'),
+               mpf.make_addplot(lower, color='blue'),
+               mpf.make_addplot(buyPrice, type='scatter',
                                 markersize=200, marker='^', color='green'),
-               mpf.make_addplot(sell_price, type='scatter',
-                                markersize=200, marker='^', color='red'),
-               mpf.make_addplot(data['Buy&Hold returns'],
-                                type='line', panel=1, ylabel='Performance', color = 'red'),
-               mpf.make_addplot(data['Bollinger returns'], type='line', panel=1, ylabel='Performance', color = 'green')]
+               mpf.make_addplot(sellPrice, type='scatter',
+                                markersize=200, marker='v', color='red'),
+               mpf.make_addplot(buyAndHold,
+                                type='line', panel=1, ylabel='Performance', color='red'),
+               mpf.make_addplot(stratReturns, type='line', panel=1, ylabel='Performance', color='green')]
 
         mpf.plot(data,
                  type='candle',
@@ -166,5 +181,5 @@ class trade:
                  savefig='chart.png')
 
         returns = str(
-            round((data['Bollinger returns'][len(data)-1]-1) * 100, 2))
+            round(profits, 2))
         return f'Legend for performance graph:\nGreen: Bollinger strategy\nRed: (default) Buy and hold strategy\nCumulative returns: {returns}%'
