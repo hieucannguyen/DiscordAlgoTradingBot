@@ -1,15 +1,34 @@
 # Discord Trading Bot
-A bot that allows you to create stock charts, compare stocks, obtain end-of-day data, and try out different trading strategies with back testing results
-# Bot commands
-`$$chart` will ask for a stock ticker and display a stock chart for the day.  
-![Chart](./images/chart.png)  
+A Discord bot that integrates stock analysis functionalities using the `discord.py` library and the `trade` module. This bot enables users to perform various stock analysis tasks, visualize charts, and get information related to stocks within a Discord server environment.
 
-`$$EOD` will display EOD data for a particular stock.  
-![EOD](./images/EOD.png)  
+## Introduction
 
-`$$compare` will ask for 2 stocks and display their data side to side.  
-![compare](./images/compare.png)  
+This bot provides users with the ability to interactively perform stock analysis, visualize charts, and get information related to various stocks directly within a Discord server. Leveraging the `trade` module, it offers functionalities to generate charts, compare stocks, fetch End-of-Day (EOD) data, and apply Bollinger Bands strategies.
 
-`$$bollinger` will ask for a stock and interval which will then display a chart with buy and sell signals with another chart comparing how well the bollinger band strategy did compared to the default buy and hold strategy. Finally, it will display the cumulative returns of the bollinger band strategy.  
-![bollinger](./images/bollinger.png)  
-![performance](./images/performance.png)  
+![Discord Trading Bot](bot_image.png)
+
+## How to Use
+
+To use this bot, follow these steps:
+
+1. **Installation:**
+   - Clone this repository to your local machine.
+   - Install the required libraries by running `pip install -r requirements.txt`.
+   - Obtain your Discord bot token and set it in a `.env` file as `DISCORD_TOKEN=your_token_here`.
+
+2. **Running the Bot:**
+   - Run the bot using `python bot.py`.
+
+3. **Interacting with the Bot:**
+   - Use the provided commands in the Discord server to perform various stock analysis tasks.
+
+## Bot Commands
+
+The bot supports the following commands:
+
+| Command          | Description                                      | Example Usage               |
+| ---------------- | ------------------------------------------------ | --------------------------- |
+| `$$chart`        | Generate a chart for a specific stock             | ![Chart Command](chart_command.png) `$$chart` |
+| `$$EOD`          | Fetch End-of-Day (EOD) data for a stock           | ![EOD Command](eod_command.png) `$$EOD`     |
+| `$$compare`      | Compare two stocks using charts                   | ![Compare Command](compare_command.png) `$$compare` `stock1` `stock2` |
+| `$$bollinger`    | Apply Bollinger Bands strategy on a specific stock | ![Bollinger Command](bollinger_command.png) `$$bollinger` `stock` `interval` |
