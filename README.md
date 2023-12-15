@@ -5,8 +5,6 @@ A Discord bot that integrates stock analysis functionalities using the `discord.
 
 This bot provides users with the ability to interactively perform stock analysis, visualize charts, and get information related to various stocks directly within a Discord server. Leveraging the `trade` module, it offers functionalities to generate charts, compare stocks, fetch End-of-Day (EOD) data, and apply Bollinger Bands strategies.
 
-![Discord Trading Bot](bot_image.png)
-
 ## How to Use
 
 To use this bot, follow these steps:
