@@ -24,7 +24,7 @@ To use this bot, follow these steps:
 
 The bot supports the following commands:
 
-| Command          | Example Usage               |
+| Command          | Output Images               |
 | ---------------- | --------------------------- |
 | `$$chart` Generate a chart for a specific stock | ![Chart Command](images/chart.png)|
 | `$$EOD` Fetch End-of-Day (EOD) data for a stock | ![EOD Command](images/EOD.png)|
