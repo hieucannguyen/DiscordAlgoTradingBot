@@ -1,0 +1,5 @@
+discord.py==1.7.3
+yfinance==0.1.63
+mplfinance==0.12.7a17
+pandas==1.3.3
+numpy==1.21.2
