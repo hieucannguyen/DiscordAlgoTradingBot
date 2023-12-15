@@ -1,7 +1,7 @@
 # Discord Trading Bot
-A bot that allows you to create stock charts, commpare stocks, obtain end of day data, and try out different trading strategies with back testing results!
+A bot that allows you to create stock charts, compare stocks, obtain end-of-day data, and try out different trading strategies with back testing results
 # Bot commands
-`$$chart` will ask for stock ticker and display a stock chart for the day.  
+`$$chart` will ask for a stock ticker and display a stock chart for the day.  
 ![Chart](./images/chart.png)  
 
 `$$EOD` will display EOD data for a particular stock.  
