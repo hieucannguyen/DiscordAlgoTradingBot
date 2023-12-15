@@ -26,9 +26,9 @@ To use this bot, follow these steps:
 
 The bot supports the following commands:
 
-| Command          | Description                                      | Example Usage               |
-| ---------------- | ------------------------------------------------ | --------------------------- |
-| `$$chart`        | Generate a chart for a specific stock             | ![Chart Command](images/chart.png)|
-| `$$EOD`          | Fetch End-of-Day (EOD) data for a stock           | ![EOD Command](images/EOD.png)|
-| `$$compare`      | Compare two stocks using charts                   | ![Compare Command](images/compare.png)|
-| `$$bollinger`    | Apply Bollinger Bands strategy on a specific stock | ![Bollinger Command](images/bollinger.png)|
+| Command          | Example Usage               |
+| ---------------- | --------------------------- |
+| `$$chart` Generate a chart for a specific stock | ![Chart Command](images/chart.png)|
+| `$$EOD` Fetch End-of-Day (EOD) data for a stock | ![EOD Command](images/EOD.png)|
+| `$$compare` Compare two stocks using charts | ![Compare Command](images/compare.png)|
+| `$$bollinger` Apply Bollinger Bands strategy on a specific stock | ![Bollinger Command](images/bollinger.png)|
